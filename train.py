@@ -98,7 +98,7 @@ def train(d_train, d_test, rf_No, cfg, test):
 			with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
 				f.write('feature_name,f_score\n')
 				for feature_name, f_score in sorted_feature_importance:
-					f.write('{0},{1}\n'.format(feature_namgit@gitlab.yangqianguan.com:backend/yqg_core.gite, f_score))
+					f.write('{0},{1}\n'.format(feature_name, f_score))
 		score = lgb.predict(test['data'])
 		auc = roc_auc_score(test['label'], score)
 		return auc	
