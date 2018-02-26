@@ -81,7 +81,8 @@ def train(d_train, d_test, rf_No, cfg, test):
 	params = cfg['params']
 	num_round = cfg['num_round']
 	early_stopping = cfg['early_stopping']
-	model_path = os.path.join(cfg['model_saved_as'])
+	folder_path = cfg['folder']
+	model_path = os.path.join(folder_path, cfg['model_saved_as'])
 	
 	if cfg['lib'] == 'lgb':
 		print(str(rf_No) + " Train...")
@@ -90,7 +91,7 @@ def train(d_train, d_test, rf_No, cfg, test):
 		gbm.save_model(model_path + '_' + str(rf_No) + '.model')
 		
 		features = get_feature(cfg)
-		sorted_feature_importance_path = os.path.join(cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
+		sorted_feature_importance_path = os.path.join(folder_path, cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
 		if sorted_feature_importance_path:
 			fscore = list(gbm.feature_importance('gain'))
 			feature_importance = zip(features, fscore)
@@ -111,7 +112,7 @@ def train(d_train, d_test, rf_No, cfg, test):
 		bst.save_model(model_path + '_' + str(rf_No) + '.model')
 		
 		features = get_feature(cfg)
-		fmap_path =  None
+		fmap_path =  os.path.join(folder_path, cfg['fmap_path']) if 'fmap_path' in cfg else None
 		if fmap_path:
 			create_feature_map(fmap_path, features)
 			feature_importance = bst.get_score(fmap=fmap_path, importance_type='gain')
@@ -156,6 +157,9 @@ if __name__ == '__main__':
 
 	with open(path, 'r', encoding = encoding) as f_cfg:
 		cfg = json.load(f_cfg)
+
+	if cfg.get('folder', None) is None:
+		cfg['folder'] = os.path.dirname(path)
 
 	work(cfg)
 	
