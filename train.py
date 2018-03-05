@@ -13,6 +13,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 import os
+import operator
 from sklearn.metrics import roc_auc_score 
 encoding = 'utf-8'
 
@@ -33,6 +34,7 @@ def read_data(cfg):
 	data['test_data'] = test_data
 	data['train_label'] = train_label
 	data['test_label'] = test_label
+	print('Read Data Done')
 	return data
 
 def get_feature(cfg):
@@ -95,7 +97,7 @@ def train(d_train, d_test, rf_No, cfg, test):
 		if sorted_feature_importance_path:
 			fscore = list(gbm.feature_importance('gain'))
 			feature_importance = zip(features, fscore)
-			sorted_feature_importance = sorted(feature_importance, key = operator.itemgetter(1), reverse=True)
+			sorted_feature_importance = sorted(feature_importance , key = operator.itemgetter(1), reverse = True)
 			with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
 				f.write('feature_name,f_score\n')
 				for feature_name, f_score in sorted_feature_importance:
@@ -112,17 +114,14 @@ def train(d_train, d_test, rf_No, cfg, test):
 		bst.save_model(model_path + '_' + str(rf_No) + '.model')
 		
 		features = get_feature(cfg)
-		fmap_path =  os.path.join(folder_path, cfg['fmap_path']) if 'fmap_path' in cfg else None
-		if fmap_path:
-			create_feature_map(fmap_path, features)
-			feature_importance = bst.get_score(fmap=fmap_path, importance_type='gain')
-			sorted_feature_importance = sorted(feature_importance.items(), key=operator.itemgetter(1), reverse=True)
-			sorted_feature_importance_path = os.path.join(cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
-			if sorted_feature_importance_path:
-				with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
-					f.write('feature_name,f_score\n')
-					for feature_name, f_score in sorted_feature_importance:
-						f.write('{0},{1}\n'.format(feature_name, f_score))
+		feature_importance = bst.get_score(fmap = '', importance_type = 'gain')
+		sorted_feature_importance = sorted(feature_importance.items(), key = operator.itemgetter(1), reverse = True)
+		sorted_feature_importance_path = os.path.join(folder_path, cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
+		if sorted_feature_importance_path:
+			with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
+				f.write('feature_name,f_score\n')
+				for feature_name, f_score in sorted_feature_importance:
+					f.write('{0},{1}\n'.format(feature_name, f_score))
 		score = bst.predict(d_test)
 		auc = roc_auc_score(test['label'], score)
 		return auc
