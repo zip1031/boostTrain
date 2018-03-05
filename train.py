@@ -80,7 +80,6 @@ def prepare_data(data, rf_No, cfg):
 
 
 def train(d_train, d_test, rf_No, cfg, test):
-	params = cfg['params']
 	num_round = cfg['num_round']
 	early_stopping = cfg['early_stopping']
 	folder_path = cfg['folder']
@@ -88,7 +87,7 @@ def train(d_train, d_test, rf_No, cfg, test):
 	
 	if cfg['lib'] == 'lgb':
 		print(str(rf_No) + " Train...")
-		gbm = lgb.train(params, d_train, num_boost_round = num_round, valid_sets = [d_train, dtest])
+		gbm = lgb.train(cfg['lgbparams'], d_train, num_boost_round = num_round, valid_sets = [d_train, dtest])
 		print(str(rf_No) + " Train Done!")
 		gbm.save_model(model_path + '_' + str(rf_No) + '.model')
 		
@@ -109,7 +108,7 @@ def train(d_train, d_test, rf_No, cfg, test):
 		watch_list = [(d_train, 'train'), (d_test, 'test')]
 		
 		print(str(rf_No) + " Train...")
-		bst = xgbt.train(params, d_train, num_round, watch_list, early_stopping_rounds = early_stopping)
+		bst = xgbt.train(cfg['xgbparams'], d_train, num_round, watch_list, early_stopping_rounds = early_stopping)
 		print(str(rf_No) + " Train Done!")
 		bst.save_model(model_path + '_' + str(rf_No) + '.model')
 		

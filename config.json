@@ -1,0 +1,68 @@
+{
+  
+  "lib": "",
+
+  "feature_path": "data/feature_list.csv",
+
+  "train_data": "data/train_data.csv",
+  "train_missing": null,
+  "test_data": "data/test_data.csv",
+  "test_missing": null,
+
+  "train_label": "data/train_label.csv",
+  "test_label": "data/test_label.csv",
+
+  "rf_num": ,
+  "rf_by": "",
+  "rf_test": ,
+
+  "xgbparams": {
+    "task": "train",
+    "objective": "",
+    "booster": "",
+	"eval_metric":["auc"],
+	"tree_method": "hist",
+	"num_threads": ,
+
+	"eta": ,
+	"gamma": ,
+	"max_depth": ,
+	"min_child_weight": ,
+	"alpha": ,
+	"lambda": ,
+	"subsample": ,
+	"colsample_bytree":  
+  },
+
+  "lgbparams": {
+    "task": "train",
+    "objective": "",
+    "boost": "",
+    "learning_rate": ,
+    "max_depth": ,
+    "num_leaves": ,
+    "metric": ["auc"],
+    "min_sum_hessian_in_leaf": ,
+    "feature_fraction": ,
+    "bagging_fraction": ,
+    "bagging_freq": ,
+    "min_gain_to_split": ,
+    "lambda_l1": ,
+    "lambda_l2": ,
+    "drop_rate": ,
+    "skip_drop": ,
+    "max_drop": ,
+    "num_threads": 
+  },
+
+  "num_round": ,
+  "nfold": 3,
+  "early_stopping": null,
+  "in_model": null,
+
+  "folder": null,
+  "model_saved_as": "",
+  "fmap_path": "",
+  "sorted_feature_importance": ""
+}
+
