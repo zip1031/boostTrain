@@ -23,12 +23,14 @@ def read_data(cfg):
 	test_data = None
 	test_label = None
 
-	train_data = pd.read_csv(cfg['train_data'])
+	train_chunks = pd.read_csv(cfg['train_data'], encoding = encoding, iterator = True, chunksize = 10000)
+	train_data = pd.concat(train_chunks, ignore_index = True)
 	train_label = pd.read_csv(cfg['train_label'])
 
 	if cfg['rf_num'] <= 1:
-		test_label = pd.read_csv(cfg['test_label'])
+		test_chunks = pd.read_csv(cfg['test_data'], encoding = encoding, iterator = True, chunksize = 10000)
 		test_data = pd.read_csv(cfg['test_data'])
+		test_label = pd.read_csv(cfg['test_label'])
 	data = {}
 	data['train_data'] = train_data
 	data['test_data'] = test_data
