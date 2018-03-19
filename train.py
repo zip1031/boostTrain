@@ -115,14 +115,17 @@ def train(d_train, d_test, rf_No, cfg, test):
 		bst.save_model(model_path + '_' + str(rf_No) + '.model')
 		
 		features = get_feature(cfg)
-		feature_importance = bst.get_score(fmap = '', importance_type = 'gain')
-		sorted_feature_importance = sorted(feature_importance.items(), key = operator.itemgetter(1), reverse = True)
-		sorted_feature_importance_path = os.path.join(folder_path, cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
-		if sorted_feature_importance_path:
-			with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
-				f.write('feature_name,f_score\n')
-				for feature_name, f_score in sorted_feature_importance:
-					f.write('{0},{1}\n'.format(feature_name, f_score))
+		fmap_path = os.path.join(folder_path, cfg['fmap_path']) if 'fmap_path' in cfg else None
+		if fmap_path:
+			create_feature_map(fmap_path, features)
+			feature_importance = bst.get_score(fmap = fmap_path, importance_type = 'gain')
+			sorted_feature_importance = sorted(feature_importance.items(), key = operator.itemgetter(1), reverse = True)
+			sorted_feature_importance_path = os.path.join(folder_path, cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
+			if sorted_feature_importance_path:
+				with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
+					f.write('feature_name,f_score\n')
+					for feature_name, f_score in sorted_feature_importance:
+						f.write('{0},{1}\n'.format(feature_name, f_score))
 		score = bst.predict(d_test)
 		auc = roc_auc_score(test['label'], score)
 		return auc
