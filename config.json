@@ -63,6 +63,7 @@
   "folder": null,
   "model_saved_as": "",
   "fmap_path": "",
-  "sorted_feature_importance": ""
+  "feature_importance_path":"",
+  "feature_importance_type": ""
 }
 

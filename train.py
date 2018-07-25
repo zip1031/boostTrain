@@ -8,7 +8,7 @@
 
 import sys
 import json
-import xgboost as xgbt
+import xgboost as xgb
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
@@ -16,6 +16,14 @@ import os
 import operator
 from sklearn.metrics import roc_auc_score 
 encoding = 'utf-8'
+
+def creat_feature_map(fmap_path, features):
+	oufile = open(fmap_path, 'w')
+	i = 0
+	for feature in features:
+		outfile.write('{0}\t{1}\tq\n'.format(i, feature))
+		i = i + 1
+	outfile.close()
 
 def read_data(cfg):
 	rf_num = cfg['rf_num']
@@ -29,7 +37,7 @@ def read_data(cfg):
 
 	if cfg['rf_num'] <= 1:
 		test_chunks = pd.read_csv(cfg['test_data'], encoding = encoding, iterator = True, chunksize = 10000)
-		test_data = pd.read_csv(cfg['test_data'])
+		test_data = pd.concat(test_chunks, ignore_index = True)
 		test_label = pd.read_csv(cfg['test_label'])
 	data = {}
 	data['train_data'] = train_data
@@ -71,8 +79,8 @@ def prepare_data(data, rf_No, cfg):
 		d_train = lgb.Dataset(train_data, train_label)
 		d_test = lgb.Dataset(test_data, test_label)
 	elif cfg['lib'] == 'xgb':
-		d_train = xgbt.DMatrix(train_data, train_label)
-		d_test = xgbt.DMatrix(test_data, test_label)
+		d_train = xgb.DMatrix(train_data, train_label)
+		d_test = xgb.DMatrix(test_data, test_label)
 	
 	test = {}
 	test['data'] = test_data
@@ -86,31 +94,32 @@ def train(d_train, d_test, rf_No, cfg, test):
 	early_stopping = cfg['early_stopping']
 	folder_path = cfg['folder']
 	model_path = os.path.join(folder_path, cfg['model_saved_as'])
-	
+	feature_importance_type = cfg['feature_importance_type']
+
 	if cfg['lib'] == 'lgb':
 		print(str(rf_No) + " Train...")
-		gbm = lgb.train(cfg['lgbparams'], d_train, num_boost_round = num_round, valid_sets = [d_train, dtest])
+		bst = lgb.train(cfg['lgbparams'], d_train, num_boost_round = num_round, valid_sets = [d_train, d_test])
 		print(str(rf_No) + " Train Done!")
-		gbm.save_model(model_path + '_' + str(rf_No) + '.model')
+		bst.save_model(model_path + '_' + str(rf_No) + '.model')
 		
 		features = get_feature(cfg)
-		sorted_feature_importance_path = os.path.join(folder_path, cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
-		if sorted_feature_importance_path:
-			fscore = list(gbm.feature_importance('gain'))
+		feature_importance_path = os.path.join(folder_path, cfg['feature_importance_path']) if 'feature_importance_path' in cfg else None
+		if feature_importance_path:
+			fscore = list(bst.feature_importance(feature_importance_type))
 			feature_importance = zip(features, fscore)
-			sorted_feature_importance = sorted(feature_importance , key = operator.itemgetter(1), reverse = True)
-			with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
+			sorted_feature_importance = sorted(feature_importance, key = operator.itemgetter(1), reverse = True)
+			with open(feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding = encoding) as f:
 				f.write('feature_name,f_score\n')
 				for feature_name, f_score in sorted_feature_importance:
 					f.write('{0},{1}\n'.format(feature_name, f_score))
-		score = lgb.predict(test['data'])
+		score = bst.predict(test['data'])
 		auc = roc_auc_score(test['label'], score)
 		return auc	
 	elif cfg['lib'] == 'xgb':
 		watch_list = [(d_train, 'train'), (d_test, 'test')]
 		
 		print(str(rf_No) + " Train...")
-		bst = xgbt.train(cfg['xgbparams'], d_train, num_round, watch_list, early_stopping_rounds = early_stopping)
+		bst = xgb.train(cfg['xgbparams'], d_train, num_round, watch_list, early_stopping_rounds = early_stopping)
 		print(str(rf_No) + " Train Done!")
 		bst.save_model(model_path + '_' + str(rf_No) + '.model')
 		
@@ -118,11 +127,11 @@ def train(d_train, d_test, rf_No, cfg, test):
 		fmap_path = os.path.join(folder_path, cfg['fmap_path']) if 'fmap_path' in cfg else None
 		if fmap_path:
 			create_feature_map(fmap_path, features)
-			feature_importance = bst.get_score(fmap = fmap_path, importance_type = 'gain')
+			feature_importance = bst.get_score(fmap = fmap_path, importance_type = feature_importance_type)
 			sorted_feature_importance = sorted(feature_importance.items(), key = operator.itemgetter(1), reverse = True)
-			sorted_feature_importance_path = os.path.join(folder_path, cfg['sorted_feature_importance']) if 'sorted_feature_importance' in cfg else None
-			if sorted_feature_importance_path:
-				with open(sorted_feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding=encoding) as f:
+			feature_importance_path = os.path.join(folder_path, cfg['feature_importance_path']) if 'feature_importance_path' in cfg else None
+			if feature_importance_path:
+				with open(feature_importance_path + '_' + str(rf_No) + '.csv', 'w', encoding = encoding) as f:
 					f.write('feature_name,f_score\n')
 					for feature_name, f_score in sorted_feature_importance:
 						f.write('{0},{1}\n'.format(feature_name, f_score))
