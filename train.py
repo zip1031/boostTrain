@@ -17,7 +17,7 @@ import operator
 from sklearn.metrics import roc_auc_score 
 encoding = 'utf-8'
 
-def creat_feature_map(fmap_path, features):
+def create_feature_map(fmap_path, features):
 	oufile = open(fmap_path, 'w')
 	i = 0
 	for feature in features:
