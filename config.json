@@ -60,7 +60,7 @@
   "early_stopping": null,
   "in_model": null,
 
-  "folder": null,
+  "folder": "./result",
   "model_saved_as": "",
   "fmap_path": "",
   "feature_importance_path":"",
