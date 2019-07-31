@@ -18,7 +18,7 @@ from sklearn.metrics import roc_auc_score
 encoding = 'utf-8'
 
 def create_feature_map(fmap_path, features):
-	oufile = open(fmap_path, 'w')
+	outfile = open(fmap_path, 'w')
 	i = 0
 	for feature in features:
 		outfile.write('{0}\t{1}\tq\n'.format(i, feature))
@@ -158,6 +158,9 @@ def work(cfg):
 	print('result:\n')
 	for i in model_auc_list:
 		print(i)
+
+def print_helt():
+    print("缺少1个参数：config.json的路径")
 
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
